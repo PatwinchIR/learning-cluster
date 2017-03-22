@@ -105,7 +105,7 @@ It may be hard to create a bootable USB stick on mac OS X. Failures occured for 
 Imp Note*: Check all physical connections before starting the setup.
            Go through all the steps before starting installation because the steps mentioned below can come in any order while installing.
 
-###Bullet points when installation
+### Bullet points when installation
 Before installation, makesure the monitor and keyboard are connected to the correct machine, otherwise you can't successfully install the system.
 
 1. Insert the disk and press the power button to turn-off the machine. The lights on the machine should turn-off after a few seconds. Then press the pwer button again to start the machine.
@@ -361,7 +361,7 @@ v)
     - Run the above commands on each machine to set up password-less SSH with the other three. For example, when on losalamos, you want to run the script three times with `B` as alpha, beta, and gamma each time. Use scp to transfer the script file between machines to save time.
 
 	- Be careful when you copy paste the command line from the official guide, there might be extra whitespaces due to pdf format. So double check before running the command.
-	- Ubuntu system has no pre-set password for root user, in order to login as root user, you need to set password first, use command `sudo passwd`
+	- Ubuntu system has no pre-set password for root user, in order to login as root user, you need to set password first, use command `sudo passwd root`, openssh as default doesn't allow root to ssh, so you also need to modify `/etc/ssh/sshd_config`, change `PermitRootLogin without-password` to `PermitRootLogin yes`, after this, restart ssh service using `service ssh restart`.
 	- The manual from Hortonworks have covered the basic steps. You can also check [this](http://askubuntu.com/questions/497895/permission-denied-for-rootlocalhost-for-ssh-connection) if you need more help.
 	- You need to use root permission to set up password-less SSH. To set the root password see [this](http://askubuntu.com/questions/155278/how-do-i-set-the-root-password-so-i-can-use-su-instead-of-sudo).
 	- If you change the ssh configuration, you may need to restart ssh by `service ssh restart`.
@@ -536,7 +536,7 @@ All your are doing is going either up or down the network model layers.
 # <a name="prevprobs">Problems met by previous groups and solutions</a>
 
 
-##Problems we have:
+## Problems we have:
 1. After installing the os and when we were rebooting the machines, we cannot successfully reboot it because the default boot option is to boot from network. We solve it by changing the booting option to `boot from hard drive C`from the boot menu.
 2. Shutting down losalamos is really really prone to damage its network settings and we could not fix it using port operation. Only reinstalling the system can fix it.
 3. The alpha machine also demonstrated abnormal activities in that its network response is somehow slow(ping google.com from alpha). Sometimes the network connection is just lost. We erased the IP settings and routing rules stored in memory to fix it.
@@ -545,7 +545,13 @@ We use the command:
 ```
 hdfs dfs -chmod 777 /user
 ```
-##How the demo works:
+If the above command doesn't work, try at first list hdfs folders under root `/`. For specific folder that you want to modify(`mkdir` the `input` folder for the job under `/user/`), see the owner of it, and then `su [owner of that folder]`. Before doing switch user(`su`), you need to reset the owner's password, since you can `su root` to the root account, so you can `passwd [user]` to change any user's password. You're good to go after these steps.
+
+Note: 
+- Even root user cann't modify anything on hdfs so if you need transfer anything to the cluster `losalamos` you'd better directly `scp` your files to `hdfs` or other user that has the permission to modify hdfs, then execute them.
+- To compile successfully, you need to specify the correct `JAVA_HOME`, if you face 'Class not found' issue, think about the previlege of the user account you're currenly using to execute the job.
+
+## How the demo works:
 The NameNode, namely losalamos in our configuration, stores all the metadata such as to manage the namespace and regulate the mapping rule.
 The DataNodes in our configuration are the three slave machines to actually store the data and process read and write request.
 The Jobtracker functions as the resource management and gives orders to the Tasktracker. The Tasktracker in turn follows the order of the Jobtracker and update the Jobtracker with its progress status.
